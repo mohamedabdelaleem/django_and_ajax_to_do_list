@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block body %}
+  
+
+<body>
+  <h1 class="title">Stuff I need to do</h1>
+
+  <div class="all-tasks">
+    <h2 class="task-list-title">My lists</h2>
+    <div class="notice" style="color:rgb(255, 219, 175);display:none;"> Click on a list to display it!</div>
+    <ul class="task-list" list_url='{% url "tasks:return_list_tasks"%}'>
+      {% for list in lists %}
+      <li list_id='{{list.id}}' class="list-name">{{list.name}}</li>
+      {% endfor %}
+      <!-- <li class="list-name active-list">Youtube</li> -->
+    </ul>
+
+    <form class="form_adding_list" add_list_url ="{% url 'tasks:add_list_tasks' %}" method="GET">
+      <input 
+        type="text"
+        class="new list"
+        placeholder="new list name"
+        aria-label="new list name"
+        name="name"
+        id="list_name"
+        autocomplete="off"
+      />
+      <button class="btn create" aria-label="create new list">+</button>
+    </form>
+  </div>
+
+  <div style="display: none;" class="todo-list">
+    <div class="todo-header">
+      <h2 class="list-title"></h2>
+      <p class="task-count"></p>
+    </div>
+
+    <div class="todo-body">
+      <div class="tasks">
+
+        <!-- start task -->
+        <!-- <div class="task">
+          <input 
+            type="checkbox"
+            id="task_id"
+          />
+          <label for="task_id">
+            <span class="custom-checkbox"></span>
+            ajax
+          </label>
+        </div> -->
+        <!-- /task -->
+        
+      </div>
+
+      <div class="new-task-creator">
+          <form action="">
+              <input 
+                type="text"
+                class="new task"
+                placeholder="new task name"
+                aria-label="new task name"
+              />
+              <button class="btn create" aria-label="create new task">+</button>
+            </form>
+      </div>
+
+      <div class="delete-stuff">
+        <button class="btn delete">Clear completed tasks</button>
+        <button class="btn delete">Delete list</button>
+      </div>
+    </div>
+  </div>
+
+ 
+  </div>
+</body>
+
+{% endblock body %}
+
+{% block java_script %}
+    <script>
+        $(document).ready(function(){
+
+            // Add list tasks using ajax
+            var form_adding_list = $('.form_adding_list');
+            form_adding_list.submit(function(){
+                var list_name_input = $('#list_name').val();
+                if(!list_name_input){
+                    alert('Please enter a list name');
+                }else{
+                    $.ajax({
+                        url:form_adding_list.attr('add_list_url'),
+                        method: 'GET',
+                        data:form_adding_list.serialize(),
+                        dataType: 'json',
+                        success:function(data){
+                            var list_name = data.new_list;
+                            var new_list = '<li list_id='+ data.id + ' class="list-name">'+ list_name +'</li>';
+                            $('.task-list').append(new_list);
+                            $('#list_name').val('');
+                        }
+                })};
+                return false;
+            });
+            // End of addition
+
+            // Show list When clicked
+            $(document).on('click', '.task-list li',function(){
+              var active_list = $('.active-list');
+              active_list.removeClass('active-list');
+              $(this).addClass('active-list');
+              $('.notice').hide()
+              $.ajax({
+                url:$('.task-list').attr('list_url'),
+                method: 'GET',
+                data: {'id':$(this).attr('list_id')},
+                dataType: 'json',
+                success:function(data){
+                    $('.list-title').text(data.list_name);
+                    $('.task-count').text(data.tasks_num + " tasks remaining");
+
+                    for(var task in data.tasks){
+                      var task_info = `<div class="task">
+                        <input 
+                          type="checkbox"
+                          id="`+data.tasks[task]['id']+`"
+                        />
+                        <label for="`+data.tasks[task]['id']+`">
+                          <span class="custom-checkbox"></span>`
+                          +data.tasks[task]['name']+`
+                          
+                        </label>
+                      </div>`;
+                      $('.todo-list .new-task-creator').before(task_info);
+
+                    };
+
+                    $('.todo-list').show();
+                    
+                },
+                  
+              })
+            });
+            // end of showing
+
+            //Get the number of lists 
+            if($('.todo-list').is(':hidden')){
+              $.ajax({
+                url:'/counter_list/',
+                method:'GET',
+                dataType: 'json',
+                success:function(data){
+                    if(data.list_num >= 1){
+                        $('.notice').show();
+                    };                  
+                },
+
+              })
+            };
+            // end
+
+        })
+    </script>
+
+{% endblock java_script %}
