@@ -18,7 +18,7 @@ def counter_lists(request):
     return JsonResponse(data)
 
 def add_list_tasks(request):
-    """ add a new list tasks with ajax """
+    """ add a new list tasks"""
     list_name = request.GET['name']
     new_list = ListTask.objects.create(name=list_name)
     data = {'new_list':new_list.name,'id':new_list.id}
@@ -26,7 +26,7 @@ def add_list_tasks(request):
 
 
 def return_list_tasks(request):
-    """ return a list tasks with ajax """
+    """ return a list_tasks detail"""
     print(request.GET['id'])
     list_tasks = ListTask.objects.get(id=request.GET['id'])
     tasks = list_tasks.task_set.all()
