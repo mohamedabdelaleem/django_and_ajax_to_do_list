@@ -14,7 +14,7 @@ def home(request):
 def counter_lists(request):
     """ return number of lists task 'to make Some additions in template' """
     lists = ListTask.objects.all()
-    data = {'list_num':len(lists)}
+    data = {'lists_num':len(lists)}
     return JsonResponse(data)
 
 def add_list_tasks(request):
@@ -25,7 +25,7 @@ def add_list_tasks(request):
     return JsonResponse(data)
 
 
-def return_list_tasks(request):
+def list_tasks(request):
     """ return a list_tasks detail"""
     print(request.GET['id'])
     list_tasks = ListTask.objects.get(id=request.GET['id'])
@@ -40,6 +40,16 @@ def return_list_tasks(request):
             'tasks_num':len(tasks),
             'tasks':tasks_info,
         }
+    return JsonResponse(data)
+
+
+def add_task(request, id):
+    """ add task to list """
+    task_name = request.GET['task_name']
+    list_tasks = ListTask.objects.get(id=id)
+    new_task = Task.objects.create(list_tasks=list_tasks, name=task_name)
+    tasks_counter = Task.objects.filter(list_tasks=list_tasks)
+    data = {'task_name':task_name, 'task_id':new_task.id, 'tasks_num':len(tasks_counter)}
     return JsonResponse(data)
 
 

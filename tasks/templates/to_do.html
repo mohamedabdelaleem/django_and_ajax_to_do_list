@@ -9,7 +9,7 @@
   <div class="all-tasks">
     <h2 class="task-list-title">My lists</h2>
     <div class="notice" style="color:rgb(255, 219, 175);display:none;"> Click on a list to display it!</div>
-    <ul class="task-list" list_url='{% url "tasks:return_list_tasks"%}'>
+    <ul class="task-list" list_url='{% url "tasks:list_tasks"%}'>
       {% for list in lists %}
       <li list_id='{{list.id}}' class="list-name">{{list.name}}</li>
       {% endfor %}
@@ -55,14 +55,16 @@
       </div>
 
       <div class="new-task-creator">
-          <form action="">
+          <form class="add-task">
               <input 
                 type="text"
                 class="new task"
-                placeholder="new task name"
                 aria-label="new task name"
+                name="task_name"
+                autocomplete="off"
+                id="task_name"
               />
-              <button class="btn create" aria-label="create new task">+</button>
+              <button class="btn create" aria-label="create new task" type="submit">+</button>
             </form>
       </div>
 
@@ -100,6 +102,10 @@
                             var new_list = '<li list_id='+ data.id + ' class="list-name">'+ list_name +'</li>';
                             $('.task-list').append(new_list);
                             $('#list_name').val('');
+                            if($('.task-list').children().length === 1){
+                              $('.notice').show();
+                            };
+                            
                         }
                 })};
                 return false;
@@ -109,6 +115,7 @@
             // Show list When clicked
             $(document).on('click', '.task-list li',function(){
               var active_list = $('.active-list');
+              $('.todo-list .tasks .task').remove();   // remove last tasks to display the Current tasks
               active_list.removeClass('active-list');
               $(this).addClass('active-list');
               $('.notice').hide()
@@ -133,7 +140,7 @@
                           
                         </label>
                       </div>`;
-                      $('.todo-list .new-task-creator').before(task_info);
+                      $('.todo-list .tasks').append(task_info);
 
                     };
 
@@ -146,20 +153,53 @@
             // end of showing
 
             //Get the number of lists 
-            if($('.todo-list').is(':hidden')){
+            
               $.ajax({
                 url:'/counter_list/',
                 method:'GET',
                 dataType: 'json',
                 success:function(data){
-                    if(data.list_num >= 1){
+                    if(data.lists_num >= 1){
                         $('.notice').show();
                     };                  
                 },
 
-              })
-            };
+              });
+            
             // end
+
+            // add task
+            $('.add-task').submit(function(){
+              if(!$('#task_name').val()){
+                alert('Please enter a list name');
+              }else{
+                $.ajax({
+                  url:'lists/'+$('.active-list').attr('list_id')+'/add_task',
+                  data:$('.add-task').serialize(),
+                  method:"GET",
+                  dataType:'json',
+                  success:function(data){
+                    var task_info = `<div class="task">
+                      <input 
+                        type="checkbox"
+                        id="`+data.task_id+`"
+                      />
+                      <label for="`+data.task_id+`">
+                        <span class="custom-checkbox"></span>`
+                        +data.task_name+`
+                        
+                      </label>
+                    </div>`;
+                    $('.tasks').append(task_info);
+                    $('.task-count').text(data.tasks_num + " tasks remaining");
+                    $('#task_name').val('');
+                  },
+                });
+              };
+              
+              return false;
+            });
+            //end
 
         })
     </script>
