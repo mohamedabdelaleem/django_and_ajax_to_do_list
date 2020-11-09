@@ -7,5 +7,6 @@ urlpatterns = [
     path('add_list/', views.add_list_tasks, name='add_list_tasks'),
     path('counter_list/', views.counter_lists, name='counter_lists'),
     path('list_tasks/', views.list_tasks, name='list_tasks'),
+    path('task_status/', views.task_status, name='task_status'),
     path('lists/<int:id>/add_task', views.add_task, name='add_task'),
 ]

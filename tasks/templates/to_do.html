@@ -126,13 +126,19 @@
                 dataType: 'json',
                 success:function(data){
                     $('.list-title').text(data.list_name);
-                    $('.task-count').text(data.tasks_num + " tasks remaining");
+                    $('.task-count').text(data.tasks_remaining + " tasks remaining");
 
+                    if(data.tasks.length === 0){
+                      $('.delete-stuff').hide();
+                    }else{
+                      $('.delete-stuff').show();
+                    };
                     for(var task in data.tasks){
                       var task_info = `<div class="task">
                         <input 
                           type="checkbox"
                           id="`+data.tasks[task]['id']+`"
+                          `+data.tasks[task]['is_checked']+`
                         />
                         <label for="`+data.tasks[task]['id']+`">
                           <span class="custom-checkbox"></span>`
@@ -191,7 +197,7 @@
                       </label>
                     </div>`;
                     $('.tasks').append(task_info);
-                    $('.task-count').text(data.tasks_num + " tasks remaining");
+                    $('.task-count').text(data.tasks_remaining + " tasks remaining");
                     $('#task_name').val('');
                   },
                 });
@@ -199,6 +205,27 @@
               
               return false;
             });
+            //end
+
+            // Done Task
+            $(document).on('click', '.task label',function(){
+              $.ajax({
+                url:'task_status/',
+                method:'GET',
+                data:{'id':$(this).attr('for')},
+                dataType:'json',
+                success:function(data){
+                  if(data.is_done){
+                    $('input[id="'+$(this).attr('for')+'"]').prop('checked', true)
+                  }else{
+                    $('input[id="'+$(this).attr('for')+'"]').removeProp('checked')
+                  };
+                  $('.task-count').text(data.tasks_remaining + " tasks remaining");
+                },
+              })
+            });
+
+
             //end
 
         })
