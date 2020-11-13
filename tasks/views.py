@@ -73,3 +73,29 @@ def task_status(request):
     
     data = {'is_done':task.is_done, 'tasks_remaining':tasks_remaining}
     return JsonResponse(data)
+
+
+def clear_tasks(request):
+    """ delete completed tasks """
+    list_id = request.GET['id']
+    list_tasks = ListTask.objects.get(id=list_id)
+    tasks = Task.objects.filter(list_tasks=list_tasks, is_done=True)
+    if len(tasks) >= 1:
+        tasks.delete()
+        data = {'done':True}
+    else:
+        data = {'done':False}
+
+    return JsonResponse(data)
+
+
+def delete_list(request):
+    
+    list_id = request.GET['id']
+    list_tasks = ListTask.objects.get(id=list_id)
+    if list_tasks:
+        list_tasks.delete()
+        data = {'deleted':True}
+    else:
+        data = {'deleted':False}
+    return JsonResponse(data)

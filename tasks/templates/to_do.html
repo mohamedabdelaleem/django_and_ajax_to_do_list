@@ -69,8 +69,8 @@
       </div>
 
       <div class="delete-stuff">
-        <button class="btn delete">Clear completed tasks</button>
-        <button class="btn delete">Delete list</button>
+        <button style="background-color: #2c4098;" class="btn delete" id='clear-tasks' clear_url="{% url 'tasks:clear_tasks' %}">Clear completed tasks</button>
+        <button style="background-color: #2c4098;" class="btn delete" id='delete-list' delete_url="{% url 'tasks:delete_list' %}">Delete list</button>
       </div>
     </div>
   </div>
@@ -115,7 +115,7 @@
             // Show list When clicked
             $(document).on('click', '.task-list li',function(){
               var active_list = $('.active-list');
-              $('.todo-list .tasks .task').remove();   // remove last tasks to display the Current tasks
+              $('.todo-list .tasks .task').remove();   // remove last tasks 'that for last list tasks' to display the Current tasks
               active_list.removeClass('active-list');
               $(this).addClass('active-list');
               $('.notice').hide()
@@ -128,11 +128,6 @@
                     $('.list-title').text(data.list_name);
                     $('.task-count').text(data.tasks_remaining + " tasks remaining");
 
-                    if(data.tasks.length === 0){
-                      $('.delete-stuff').hide();
-                    }else{
-                      $('.delete-stuff').show();
-                    };
                     for(var task in data.tasks){
                       var task_info = `<div class="task">
                         <input 
@@ -225,9 +220,49 @@
               })
             });
 
-
             //end
 
+            // Clear completed tasks
+            $('#clear-tasks').click(function(){
+              var list_id = $('.active-list').attr('list_id');
+              var completed_tasks = $('.tasks .task input[type="checkbox"]:checked:enabled');
+              $.ajax({
+                url:$(this).attr('clear_url'),
+                method:"GET",
+                data:{'id':list_id},
+                dataType:"json",
+                success:function(data){
+                  if(data.done){
+                    completed_tasks.each(function(){
+                      $(this).parent('.task').remove();
+                    });
+                  }else{
+                    alert('No task completed');
+                  };
+                },
+              })
+            });
+            // end
+
+            // Delete list tasks
+            $('#delete-list').click(function(){
+              var list_id = $('.active-list').attr('list_id');
+              $.ajax({
+                url:$(this).attr('delete_url'),
+                method:"GET",
+                data:{'id':list_id},
+                dataType:"json",
+                success:function(data){
+                  if(data.deleted){
+                    $('.active-list').remove();
+                    $('.todo-list').hide();
+                  }else{
+                    alert('There is a proplem with that');
+                  };
+                },
+              })
+            });
+            // end
         })
     </script>
 
